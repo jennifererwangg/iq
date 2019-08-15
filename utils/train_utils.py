@@ -4,6 +4,7 @@
 import json
 import torch
 import torchtext
+import pdb
 
 
 # ===========================================================
@@ -65,7 +66,8 @@ class Vocabulary(object):
         return len(self.word2idx)
 
     def save(self, location):
-        with open(location, 'wb') as f:
+        pdb.set_trace()
+        with open(location, 'w', encoding="utf8") as f:
             json.dump({'word2idx': self.word2idx,
                        'idx2word': self.idx2word,
                        'idx': self.idx}, f)

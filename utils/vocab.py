@@ -11,7 +11,6 @@ import nltk
 import numpy as np
 import re
 
-
 def process_text(text, vocab, max_length=20):
     """Converts text into a list of tokens surrounded by <start> and <end>.
 
@@ -63,7 +62,7 @@ def tokenize(sentence):
     sentence = re.sub('\s+', ' ', sentence)
 
     tokens = nltk.tokenize.word_tokenize(
-            sentence.strip().lower().decode('utf8'))
+            sentence.strip().lower())
     return tokens
 
 
@@ -87,12 +86,12 @@ def build_vocab(questions, answer_types, threshold):
     words = []
     for category in answer_types:
         for answer in answer_types[category]:
-            answer = tokenize(answer.encode('utf8'))
+            answer = tokenize(answer)
             words.extend(answer)
 
     counter = Counter()
     for i, entry in enumerate(questions['questions']):
-        question = entry["question"].encode('utf8')
+        question = entry["question"]
         q_tokens = tokenize(question)
         counter.update(q_tokens)
 
