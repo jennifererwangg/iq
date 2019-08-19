@@ -15,6 +15,8 @@ from train_utils import Vocabulary
 from vocab import load_vocab
 from vocab import process_text
 
+import pdb
+
 
 def create_answer_mapping(annotations, ans2cat):
     """Returns mapping from question_id to answer.
@@ -70,8 +72,8 @@ def save_dataset(image_dir, questions, annotations, vocab, ans2cat, output,
     qid2ans, image_ids = create_answer_mapping(annos, ans2cat)
     total_questions = len(qid2ans.keys())
     total_images = len(image_ids)
-    print "Number of images to be written: %d" % total_images
-    print "Number of QAs to be written: %d" % total_questions
+    print ("Number of images to be written: %d" % total_images)
+    print ("Number of QAs to be written: %d" % total_questions)
 
     h5file = h5py.File(output, "w")
     d_questions = h5file.create_dataset(
@@ -93,21 +95,25 @@ def save_dataset(image_dir, questions, annotations, vocab, ans2cat, output,
     bar = progressbar.ProgressBar(maxval=total_questions)
     i_index = 0
     q_index = 0
-    done_img2idx = {}
+    done_img2idx = {262552: 0}
     for entry in questions['questions']:
-        image_id = entry['image_id']
+        image_id = entry['image_id'] # image_id is an int type
         question_id = entry['question_id']
         if image_id not in image_ids:
             continue
         if question_id not in qid2ans:
             continue
         if image_id not in done_img2idx:
+            if image_id == 262552:
+                pdb.set_trace()
             try:
                 path = "%d.jpg" % (image_id)
                 image = Image.open(os.path.join(image_dir, path)).convert('RGB')
             except IOError:
                 path = "%012d.jpg" % (image_id)
                 image = Image.open(os.path.join(image_dir, path)).convert('RGB')
+            except FileNotFoundError:
+                pass
             image = transform(image)
             d_images[i_index, :, :, :] = np.array(image)
             done_img2idx[image_id] = i_index
@@ -123,9 +129,10 @@ def save_dataset(image_dir, questions, annotations, vocab, ans2cat, output,
         d_indices[q_index] = done_img2idx[image_id]
         q_index += 1
         bar.update(q_index)
+    pdb.set_trace()
     h5file.close()
-    print "Number of images written: %d" % i_index
-    print "Number of QAs written: %d" % q_index
+    print ("Number of images written: %d" % i_index)
+    print ("Number of QAs written: %d" % q_index)
 
 
 if __name__ == '__main__':
@@ -133,7 +140,7 @@ if __name__ == '__main__':
     parser.add_argument('--image-dir', type=str, default='data/vqa/train2014',
                         help='directory for resized images')
     parser.add_argument('--vocab-path', type=str,
-                        default='data/processed/vocab.json',
+                        default='data/processed/vocab_vae.json',
                         help='Path for saving vocabulary wrapper.')
     parser.add_argument('--questions', type=str,
                         default='data/vqa/v2_OpenEnded_mscoco_'
@@ -144,7 +151,7 @@ if __name__ == '__main__':
                         'train2014_annotations.json',
                         help='Path for train annotation file.')
     parser.add_argument('--ans2cat', type=str,
-                        default='data/processed/ans2cat.json',
+                        default='data/vqa/iq_dataset.json',
                         help='Path for the answer types.')
     parser.add_argument('--output', type=str,
                         default='data/processed/vae_dataset.hdf5',
